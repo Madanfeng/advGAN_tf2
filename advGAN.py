@@ -42,8 +42,8 @@ def AdvGAN(train_data, test_data, tmodel):
     generator = Generator()
 
     # define optimizers
-    d_opt = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-    g_opt = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+    d_opt = tf.keras.optimizers.Adam(1e-4, beta_1=0.5)
+    g_opt = tf.keras.optimizers.Adam(1e-4, beta_1=0.5)
 
     loss_object = tf.keras.losses.BinaryCrossentropy()
 
@@ -51,8 +51,8 @@ def AdvGAN(train_data, test_data, tmodel):
     for epoch in range(cfg.EPOCHS):
 
         if epoch == int(cfg.EPOCHS * 0.7):
-            d_opt = tf.keras.optimizers.Adam(2e-5, beta_1=0.5)
-            g_opt = tf.keras.optimizers.Adam(2e-5, beta_1=0.5)
+            d_opt = tf.keras.optimizers.Adam(1e-5, beta_1=0.5)
+            g_opt = tf.keras.optimizers.Adam(1e-5, beta_1=0.5)
 
         pbar = tqdm(train_data)
         for images, labels, targets, paths in pbar:

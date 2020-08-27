@@ -24,7 +24,7 @@ __C.DISC_SAVE_DIR       = "./weights/discriminator/"
 __C.GPU_IDS             = '6'
 
 # Model parameters
-__C.BATCH_SIZE          = 16
+__C.BATCH_SIZE          = 32
 __C.IMAGE_SIZE          = 320
 __C.NUM_CHANNELS        = 3
 __C.CLASS_NAME          = CLASS_NAME_28
