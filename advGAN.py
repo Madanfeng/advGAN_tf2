@@ -132,7 +132,7 @@ def AdvGAN(train_data, test_data, tmodel):
             probs = tmodel.predict_softmax(images_perturbed)
 
             for i, prob in enumerate(probs):
-                sum_prob += prob.numpy()[targets[i]]
+                sum_prob += prob.numpy()[np.int(targets[i])]
                 sum_num += 1
                 ind = tf.argmax(prob)
                 if ind == targets[i]: suc_num += 1
