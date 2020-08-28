@@ -26,7 +26,6 @@ __C.GENERATOR_PATH      = "./weights/generator/last.h5"  # 在测试时，训练
 __C.GPU_IDS             = '6'
 
 # Model parameters
-__C.BATCH_SIZE          = 32
 __C.IMAGE_SIZE          = 320
 __C.NUM_CHANNELS        = 3
 __C.CLASS_NAME          = CLASS_NAME
@@ -34,6 +33,7 @@ __C.NUM_CLASS           = len(CLASS_NAME)
 
 
 # Attack algorithm parameters
+__C.BATCH_SIZE          = 32
 __C.TARGET              = 17    # attack target label
 __C.TARGETED            = True  # should we target one specific class? or just be wrong?
 __C.CONFIDENCE          = 10    # how strong the adversarial example should be
