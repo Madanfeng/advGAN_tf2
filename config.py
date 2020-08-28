@@ -14,11 +14,13 @@ cfg                     = __C
 
 __C.TRAIN_ANNOT_PATH    = '/data/project/madanfeng/test/nn_robust_attacks/attack_tf2/data/dataset/sex_new_10000.list'  # 通过 train_annot_path 标签文档来读取训练图片
 __C.TEST_ANNOT_PATH     = '/data/project/madanfeng/test/nn_robust_attacks/attack_tf2/data/dataset/sex_test_3000.list'
-__C.MODEL_PATH          = '/data/project/madanfeng/test/nn_robust_attacks/attack_tf2/model/model.stage3.03-0.8788.v2_320_tf2.hdf5'
-# __C.SAVE_ADV_PATH       = './output/sex/sex_01/'     # 对抗样本保存的地址
+__C.SAVE_ADV_DIR        = './output/'     # 生成器生成对抗样本(包括扰动)保存的地址
 # __C.LOG_PATH            = './log/sex/log_01.txt'  # 日志保存地址
-__C.GEN_SAVE_DIR        = "./weights/generator/"
-__C.DISC_SAVE_DIR       = "./weights/discriminator/"
+
+__C.MODEL_PATH          = '/data/project/madanfeng/test/nn_robust_attacks/attack_tf2/model/model.stage3.03-0.8788.v2_320_tf2.hdf5'
+__C.GEN_SAVE_DIR        = "./weights/generator/"       # 在训练时，用于保存生成器模型的文件夹
+__C.DISC_SAVE_DIR       = "./weights/discriminator/"   # 在训练时，用于保存判别器模型的文件夹
+__C.GENERATOR_PATH      = "./weights/generator/last.h5"  # 在测试时，训练好的生成器模型地址
 
 
 __C.GPU_IDS             = '6'
