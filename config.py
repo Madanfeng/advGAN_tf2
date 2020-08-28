@@ -2,10 +2,10 @@ from easydict import EasyDict as edict
 
 # class name list
 CLASS_NAME = ['art_exposed', 'baby_naked', 'child_naked', 'exposed', 'feet', 'intimate_nannan',
-                 'intimate_nannv', 'intimate_nvnv', 'leggy', 'lutuitexie', 'midriff', 'mild_cleavage',
-                 'moderate_cleavage', 'naked', 'nan_midriff', 'nan_zhichuanneiyineiku', 'nanxiong',
-                 'normal', 'nv_zhichuanneiyineiku', 'porn', 'sex', 'sex_toy', 'sexy_qitaluolu',
-                 'sexy_tunbu', 'sexy_xiatitexie', 'sexy_xiongbutexie', 'shield_breast', 'sm']
+              'intimate_nannv', 'intimate_nvnv', 'leggy', 'lutuitexie', 'midriff', 'mild_cleavage',
+              'moderate_cleavage', 'naked', 'nan_midriff', 'nan_zhichuanneiyineiku', 'nanxiong',
+              'normal', 'nv_zhichuanneiyineiku', 'porn', 'sex', 'sex_toy', 'sexy_qitaluolu',
+              'sexy_tunbu', 'sexy_xiatitexie', 'sexy_xiongbutexie', 'shield_breast', 'sm']
 
 __C                     = edict()
 # Consumers can get config by: from config import cfg
