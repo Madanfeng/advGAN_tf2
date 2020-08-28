@@ -1,50 +1,98 @@
-import tensorflow as tf
 from tensorflow.keras import Model
+import tensorflow as tf
+from tqdm import tqdm
 import numpy as np
 import cv2
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '6'
+from data import Dataset
+from config import cfg
+
+os.environ["CUDA_VISIBLE_DEVICES"] = cfg.GPU_IDS
 
 
-adv_img_path = "./adv_demo.jpg"
-save_img_path = "./demo.jpg"
+def check_dirs(dirs):
+    for dir in dirs:
+        if not os.path.exists(dir):
+            print("Make", dir)
+            os.makedirs(dir)
 
-# load generator
-gen_path = "./weights/generator/25.h5"
-generator = tf.keras.models.load_model(gen_path, compile=False)
-gen_model = Model(inputs=generator.input, outputs=generator.layers[-1].output)
-# gen_model.summary()
 
-# load model
-model_path = "/data/project/madanfeng/test/nn_robust_attacks/attack_tf2/model/model.stage3.03-0.8788.v2_320_tf2.hdf5"
-model = tf.keras.models.load_model(model_path, compile=False)
-tmodel = Model(inputs=model.input, outputs=model.layers[-1].output)
+if __name__ == '__main__':
 
-# load img
-img_path = "/data/project/xing/porn_data_set/multi_label_porn_misclassify_20200408/2eabea21d7ebf83f0ec9dd32bd4bd933.jpg"
-img = cv2.imread(img_path)
-img = cv2.resize(img, (320, 320))
-cv2.imwrite(save_img_path, img)
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-img = img[np.newaxis, :] / 255. - 0.5
+    # 设置输出的地址
+    save_adv_dir = cfg.SAVE_ADV_DIR
+    adv_img_dir = os.path.join(save_adv_dir, "adv/")   # 对抗样本保存的地址
+    img_dir = os.path.join(save_adv_dir, "img/")       # 对应原图保存的地址
+    perturb_npy_dir = os.path.join(save_adv_dir, "perturb/npy/")  # 对应扰动npy保存的地址
+    perturb_jpg_dir = os.path.join(save_adv_dir, "perturb/jpg/")  # 对应扰动jpg保存的地址
+    check_dirs([adv_img_dir, img_dir, perturb_npy_dir, perturb_jpg_dir])
 
-# produce adv img
-perturb = gen_model(img)
-perturb = tf.clip_by_value(perturb, -0.5, 0.5)
-adv_img = img + perturb
-adv_img = tf.clip_by_value(adv_img, -0.5, 0.5)
+    # load attacking data set
+    data = Dataset(istrain=False)
 
-# pred
-pred_adv = tmodel(adv_img)
-print("adv_img:")
-print(pred_adv.numpy())
-pred = tmodel(img)
-print("img:")
-print(pred.numpy())
+    # load generator
+    generator = tf.keras.models.load_model(cfg.GENERATOR_PATH, compile=False)
+    gen_model = Model(inputs=generator.input, outputs=generator.layers[-1].output)
+    # gen_model.summary()
 
-# save adv img
-adv_img = (adv_img[0].numpy() + .5) * 255.
-adv_img = cv2.cvtColor(adv_img, cv2.COLOR_RGB2BGR)
-cv2.imwrite(adv_img_path, adv_img)
+    # load model
+    model = tf.keras.models.load_model(cfg.MODEL_PATH, compile=False)
+    tmodel = Model(inputs=model.input, outputs=model.layers[-1].output)
+
+    suc_num = 0
+    sum_num = 0
+    p_dis = 0
+    sum_prob = 0
+
+    pbar = tqdm(data)
+    for images, labels, targets, paths in pbar:
+
+        # produce adv imgs
+        perturbs = gen_model(images)
+        perturbs = tf.clip_by_value(perturbs, -0.5, 0.5)
+        adv_images = images + perturbs
+        adv_images = tf.clip_by_value(adv_images, -0.5, 0.5)
+
+        # pred
+        adv_probs = tmodel(adv_images)
+        probs = tmodel(images)
+
+        for i, prob in enumerate(probs):
+            sum_prob += prob.numpy()[np.int(targets[i])]
+            sum_num += 1
+            ind = tf.argmax(prob)
+            if ind == targets[i]: suc_num += 1
+
+            p_dis += np.sum((perturbs[i] ** 2) ** .5)
+
+            path = paths[i]
+            name = path.split('/')[-1].split('.')[0]
+
+            # save adv img
+            adv_img = (adv_images[i].numpy() + .5) * 255.
+            adv_img = cv2.cvtColor(adv_img, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(adv_img_dir, adv_img)
+
+            # save perturb
+            perturb = (perturbs[i] + .5) * 255.
+            perturb = perturb[::]  # rgb2bgr
+            np.save(os.path.join(perturb_npy_dir, name+".npy"), perturb)
+            cv2.imwrite(os.path.join(perturb_jpg_dir, name+".jpg"), perturb)
+
+            # save img
+            image = (images[i] + .5) * 255.
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(os.path.join(img_dir, name+".jpg"), image)
+
+        acc = suc_num / sum_num
+        dis = p_dis / sum_num
+        ave_prob = sum_prob / sum_num
+        pbar.set_description("acc: %.4f, ave_prob: %.6f, dis: %.6f" % (acc, ave_prob, dis))
+
+    acc = suc_num / sum_num
+    dis = p_dis / sum_num
+    ave_prob = sum_prob / sum_num
+    print("acc: %.4f, ave_prob: %.6f, dis: %.6f" % (acc, ave_prob, dis))
+    print(sum_num)
 
