@@ -12,8 +12,8 @@
 
    注意，数据集准备包括2部分（ 图片 和 对应标签文件 ）：
 
-   1. 图片的准备。
-   2. 标签文件 的准备。标签文件格式 `XXXX.jpg [类别号]`，如`/dataset/XXX/adganoi2XX3rnadfa.jpg 21 `。
+   1. **图片**的准备。
+   2. **标签文件** 的准备。标签文件格式 `XXXX.jpg [类别号]`，如`/dataset/XXX/adganoi2XX3rnadfa.jpg 21 `。
 
 3. 修改 **config.py** 文件中的参数。主要包括
 
