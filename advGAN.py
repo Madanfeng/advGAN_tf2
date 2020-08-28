@@ -125,8 +125,8 @@ def AdvGAN(train_data, test_data, tmodel):
 
         for images, labels, targets, paths in test_data:
 
-            perturb = tf.clip_by_value(generator(images, training=False), -thresh, thresh)
-            images_perturbed = perturb + images
+            perturbs = tf.clip_by_value(generator(images, training=False), -thresh, thresh)
+            images_perturbed = perturbs + images
             images_perturbed = tf.clip_by_value(images_perturbed, -0.5, 0.5)
 
             probs = tmodel.predict_softmax(images_perturbed)
@@ -137,7 +137,7 @@ def AdvGAN(train_data, test_data, tmodel):
                 ind = tf.argmax(prob)
                 if ind == targets[i]: suc_num += 1
 
-                p_dis += np.sum((perturb[i] ** 2) ** .5)
+                p_dis += np.sum((perturbs[i] ** 2) ** .5)
 
         acc = suc_num / sum_num
         dis = p_dis / sum_num
