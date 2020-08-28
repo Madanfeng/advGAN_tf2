@@ -56,43 +56,39 @@ if __name__ == '__main__':
 
         # pred
         adv_probs = tmodel(adv_images)
-        probs = tmodel(images)
+        # probs = tmodel(images)
 
-        for i, prob in enumerate(probs):
-            sum_prob += prob.numpy()[np.int(targets[i])]
+        for i, adv_prob in enumerate(adv_probs):
+            sum_prob += adv_prob.numpy()[np.int(targets[i])]
             sum_num += 1
-            ind = tf.argmax(prob)
-            if ind == targets[i]: suc_num += 1
+            ind = tf.argmax(adv_prob)
+            if ind == targets[i]:
+                suc_num += 1
 
             p_dis += np.sum((perturbs[i] ** 2) ** .5)
 
             path = paths[i]
-            name = path.split('/')[-1].split('.')[0]
+            name = path.split('/')[-1]   # XXX.jpg
 
             # save adv img
             adv_img = (adv_images[i].numpy() + .5) * 255.
             adv_img = cv2.cvtColor(adv_img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(adv_img_dir, adv_img)
+            cv2.imwrite(os.path.join(adv_img_dir, name), adv_img)
 
             # save perturb
             perturb = (perturbs[i] + .5) * 255.
-            perturb = perturb[::]  # rgb2bgr
-            np.save(os.path.join(perturb_npy_dir, name+".npy"), perturb)
-            cv2.imwrite(os.path.join(perturb_jpg_dir, name+".jpg"), perturb)
+            perturb = perturb[..., ::-1]  # rgb2bgr
+            np.save(os.path.join(perturb_npy_dir, name[:-3]+"npy"), perturb)
+            perturb = np.array(perturb, dtype=np.uint8)
+            cv2.imwrite(os.path.join(perturb_jpg_dir, name), perturb)
 
             # save img
             image = (images[i] + .5) * 255.
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(os.path.join(img_dir, name+".jpg"), image)
+            cv2.imwrite(os.path.join(img_dir, name), image)
 
         acc = suc_num / sum_num
         dis = p_dis / sum_num
         ave_prob = sum_prob / sum_num
         pbar.set_description("acc: %.4f, ave_prob: %.6f, dis: %.6f" % (acc, ave_prob, dis))
-
-    acc = suc_num / sum_num
-    dis = p_dis / sum_num
-    ave_prob = sum_prob / sum_num
-    print("acc: %.4f, ave_prob: %.6f, dis: %.6f" % (acc, ave_prob, dis))
-    print(sum_num)
 
