@@ -61,7 +61,8 @@ class Dataset:
                     batch_images[num, :, :, :] = image
                     batch_labels[num] *= label
 
-                    if int(label) == int(self.target):
+                    if cfg.TARGETED and int(label) == int(self.target):
+                        # 在 目标攻击 的前提下，
                         # 如果图片标签和目标类一样，则随机选取一个目标类
                         target_pool = [i for i in range(self.class_num)]
                         target_pool.pop(self.target)
