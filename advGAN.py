@@ -97,8 +97,8 @@ class AdvGan:
             l_adv = adv_loss(f_fake_logits, targets_tensor_onehot, self.is_targeted)
 
             # weights for generator loss function
-            alpha = 5.0
-            beta = 1.0
+            alpha = cfg.ALPHA
+            beta = cfg.BETA
             g_loss = l_adv + alpha * g_loss_fake + beta * l_perturb
 
         # train the discriminator
@@ -135,8 +135,8 @@ class AdvGan:
             pbar.set_description("epoch: %d, g_loss: %.8f, d_loss: %.8f" % (epoch, g_loss.numpy(), d_loss.numpy()))
 
         # save model
-        if epoch % 5 == 0:
-            print("Save model...")
+        if epoch % 1 == 0:
+            # print("Save model...")
             self.discriminator.save(cfg.DISC_SAVE_DIR+str(epoch)+".h5", save_format='h5')
             self.generator.save(cfg.GEN_SAVE_DIR+str(epoch)+".h5", save_format='h5')
 
@@ -162,6 +162,7 @@ class AdvGan:
 
                 ind = tf.argmax(prob)
                 if ind == targets[i].numpy(): suc_num += 1
+                # if ind == targets[i]: suc_num += 1
                 if cfg.TARGETED:
                     sum_prob += prob.numpy()[np.int(targets[i])]
                 elif not cfg.TARGETED and ind == targets[i]:
@@ -203,9 +204,9 @@ class AdvGan:
 #             d_opt = tf.keras.optimizers.Adam(4e-6, beta_1=0.5)
 #             g_opt = tf.keras.optimizers.Adam(4e-6, beta_1=0.5)
 #
-#         it = iter(train_data.take(train_steps_per_epoch + 1))
-#         next(it)
-#         pbar = tqdm(it)
+#         # it = iter(train_data.take(train_steps_per_epoch + 1))
+#         # next(it)
+#         pbar = tqdm(train_data)
 #         for images, labels, targets, paths in pbar:
 #             # convert to one-hot
 #             targets_tensor = tf.convert_to_tensor(targets, dtype=tf.int32)
@@ -276,9 +277,9 @@ class AdvGan:
 #         p_dis = 0
 #         sum_prob = 0
 #
-#         test_it = iter(test_data.take(test_steps_per_epoch + 1))
-#         next(test_it)
-#         for images, labels, targets, paths in test_it:
+#         # test_it = iter(test_data.take(test_steps_per_epoch + 1))
+#         # next(test_it)
+#         for images, labels, targets, paths in test_data:
 #
 #             perturbs = tf.clip_by_value(generator(images, training=False), -thresh, thresh)
 #             images_perturbed = perturbs + images
@@ -329,8 +330,8 @@ if __name__ == '__main__':
     train_steps_per_epoch = int(train_num / cfg.BATCH_SIZE)
     test_steps_per_epoch = int(test_num / cfg.BATCH_SIZE)
 
-    train_ds = [train_data, train_steps_per_epoch]
-    test_ds = [test_data, test_steps_per_epoch]
+    # train_ds = [train_data, train_steps_per_epoch]
+    # test_ds = [test_data, test_steps_per_epoch]
 
     # load target model
     tmodel = target_model()
@@ -342,8 +343,9 @@ if __name__ == '__main__':
     # AdvGAN(train_data, test_data, train_steps_per_epoch, test_steps_per_epoch, tmodel)
 
     # class advgan, more efficiently
-    GAN = AdvGan(train_ds, test_ds, tmodel)
+    GAN = AdvGan([train_data, train_steps_per_epoch], [test_data, test_steps_per_epoch], tmodel)
     for epoch in range(cfg.EPOCHS):
+        print("---------------------------------------", epoch, "---------------------------------------")
         GAN.fit(epoch)
         GAN.test()
 

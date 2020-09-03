@@ -23,13 +23,13 @@ if __name__ == '__main__':
     # 设置输出的地址
     save_adv_dir = cfg.SAVE_ADV_DIR
     adv_img_dir = os.path.join(save_adv_dir, "adv/")   # 对抗样本保存的地址
-    img_dir = os.path.join(save_adv_dir, "img/")       # 对应原图保存的地址
-    perturb_npy_dir = os.path.join(save_adv_dir, "perturb/npy/")  # 对应扰动npy保存的地址
+    # img_dir = os.path.join(save_adv_dir, "img/")       # 对应原图保存的地址
+    # perturb_npy_dir = os.path.join(save_adv_dir, "perturb/npy/")  # 对应扰动npy保存的地址
     perturb_jpg_dir = os.path.join(save_adv_dir, "perturb/jpg/")  # 对应扰动jpg保存的地址
-    check_dirs([adv_img_dir, img_dir, perturb_npy_dir, perturb_jpg_dir])
+    check_dirs([adv_img_dir, perturb_jpg_dir])
 
     # load attacking data set
-    data = Dataset(istrain=False)
+    # data = Dataset(istrain=False)
 
     # load tf.data.Dataset
     test_data, test_num = dataset(istrain=False)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     p_dis = 0
     sum_prob = 0
 
-    it = test_data.take(test_steps_per_epoch + 1)
+    it = iter(test_data.take(test_steps_per_epoch + 1))
     next(it)
     pbar = tqdm(it)
     for images, labels, targets, paths in pbar:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         for i, adv_prob in enumerate(adv_probs):
             sum_num += 1
             ind = tf.argmax(adv_prob)
-            if ind == targets[i]: suc_num += 1
+            if ind == targets[i].numpy(): suc_num += 1
 
             if cfg.TARGETED:
                 sum_prob += adv_prob.numpy()[np.int(targets[i])]
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
             p_dis += np.sum((perturbs[i] ** 2) ** .5)
 
-            path = paths[i]
+            path = str(paths[i]).split('\'')[1]
             name = path.split('/')[-1]   # XXX.jpg
 
             # save adv img
@@ -89,7 +89,7 @@ if __name__ == '__main__':
             # save perturb
             perturb = (perturbs[i] + .5) * 255.
             perturb = perturb[..., ::-1]  # rgb2bgr
-            np.save(os.path.join(perturb_npy_dir, name[:-3]+"npy"), perturb)
+            # np.save(os.path.join(perturb_npy_dir, name[:-3]+"npy"), perturb)
             perturb = np.array(perturb, dtype=np.uint8)
             cv2.imwrite(os.path.join(perturb_jpg_dir, name), perturb)
 
